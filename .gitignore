@@ -8,3 +8,13 @@ output.csv
 dist/
 build/
 *.egg-info/
+.env
+.env.local
+*.env
+!.env.example
+.venv/
+venv/
+.idea/
+.vscode/
+*.swp
+.DS_Store

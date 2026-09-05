@@ -259,11 +259,11 @@ class AntibodyEngine:
         return res
 
 # =============================================================================
-# 6. PROTEIN
+# 6. PROTEIN STABILITY
 # =============================================================================
 @dataclass
-class ProteinEngineResult:
-    feature_name: str = "Protein"
+class ProteinStabilityEngineResult:
+    feature_name: str = "ProteinStability"
     status: str = "OPTIMAL"
     score: float = 0.0
     metrics: Dict[str, Any] = field(default_factory=dict)
@@ -271,16 +271,16 @@ class ProteinEngineResult:
     recommendations: List[str] = field(default_factory=list)
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
-class ProteinEngine:
+class ProteinStabilityEngine:
     """
-    Protein: **Description:** stability - prediction -  -  - Integrate - folding - free - energy - predictions - with - ESM - sequenc
+    ProteinStability: Integrate folding free energy predictions with ESM sequence likelihood scores.
     """
     def __init__(self, threshold: float = 1.0, config: Optional[Dict[str, Any]] = None):
         self.threshold = threshold
         self.config = config or {}
-        self.history: List[ProteinEngineResult] = []
+        self.history: List[ProteinStabilityEngineResult] = []
 
-    def evaluate(self, primary_value: float, secondary_value: float = 0.0, **kwargs) -> ProteinEngineResult:
+    def evaluate(self, primary_value: float, secondary_value: float = 0.0, **kwargs) -> ProteinStabilityEngineResult:
         alerts = []
         recs = []
         status = "OPTIMAL"
@@ -288,17 +288,17 @@ class ProteinEngine:
 
         if primary_value > self.threshold * 2:
             status = "CRITICAL_ALERT"
-            alerts.append(f"Protein: Primary value {primary_value:.2f} breached critical threshold ({self.threshold * 2:.2f})")
+            alerts.append(f"ProteinStability: Primary value {primary_value:.2f} breached critical threshold ({self.threshold * 2:.2f})")
             recs.append("Initiate immediate protocol review and escalate to attending lead.")
         elif primary_value > self.threshold:
             status = "WARNING"
-            alerts.append(f"Protein: Value {primary_value:.2f} exceeds baseline threshold ({self.threshold:.2f})")
+            alerts.append(f"ProteinStability: Value {primary_value:.2f} exceeds baseline threshold ({self.threshold:.2f})")
             recs.append("Increase monitoring frequency and perform secondary verification.")
         else:
             recs.append("Parameters nominal under standard operating bounds.")
 
-        res = ProteinEngineResult(
-            feature_name="Protein",
+        res = ProteinStabilityEngineResult(
+            feature_name="ProteinStability",
             status=status,
             score=score,
             metrics={"primary": primary_value, "secondary": secondary_value, **kwargs},
@@ -419,7 +419,7 @@ class ProteinlanguagemodelesmagentEnrichmentSuite:
         self.proteinengine = ProteinEngine()
         self.enzymeengine = EnzymeEngine()
         self.antibodyengine = AntibodyEngine()
-        self.proteinengine = ProteinEngine()
+        self.protein_stability_engine = ProteinStabilityEngine()
         self.ancestralengine = AncestralEngine()
         self.drugengine = DrugEngine()
 
@@ -430,7 +430,7 @@ class ProteinlanguagemodelesmagentEnrichmentSuite:
         results["ProteinEngine"] = self.proteinengine.evaluate(primary_val, secondary_val)
         results["EnzymeEngine"] = self.enzymeengine.evaluate(primary_val, secondary_val)
         results["AntibodyEngine"] = self.antibodyengine.evaluate(primary_val, secondary_val)
-        results["ProteinEngine"] = self.proteinengine.evaluate(primary_val, secondary_val)
+        results["ProteinStabilityEngine"] = self.protein_stability_engine.evaluate(primary_val, secondary_val)
         results["AncestralEngine"] = self.ancestralengine.evaluate(primary_val, secondary_val)
         results["DrugEngine"] = self.drugengine.evaluate(primary_val, secondary_val)
         return results

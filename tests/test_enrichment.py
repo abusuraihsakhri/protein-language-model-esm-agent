@@ -12,7 +12,7 @@ from enrichment import (
     ProteinEngine,
     EnzymeEngine,
     AntibodyEngine,
-    ProteinEngine,
+    ProteinStabilityEngine,
     AncestralEngine,
     DrugEngine,
     ProteinlanguagemodelesmagentEnrichmentSuite,
