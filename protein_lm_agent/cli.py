@@ -11,6 +11,31 @@ from .agents import ProteinLMCoordinator
 coordinator = ProteinLMCoordinator()
 
 
+def parse_csv_bool(value):
+    """Parse literal CSV booleans, rather than using bool(nonempty_string)."""
+    if isinstance(value, bool):
+        return value
+    cleaned = "" if value is None else str(value).strip().lower()
+    if cleaned in ("true", "1", "yes", "y"):
+        return True
+    if cleaned in ("false", "0", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid is_critical_flag: {value!r}")
+
+
+def csv_safe_row(row):
+    """Protect spreadsheet viewers from formula execution on exported text cells."""
+    result = {}
+    for key, value in row.items():
+        if isinstance(value, str) and value.startswith(("=", "+", "-", "@", "\t", "\r")):
+            try:
+                float(value)
+            except ValueError:
+                value = "'" + value
+        result[key] = value
+    return result
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="protein-language-model-esm-agent", description="ProteinLM-Embedding: Masked Language Model Perplexity & Mutational Fitness Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -52,7 +77,7 @@ def main(argv=None):
         dossier = coordinator.process(payload)
         print("=" * 80)
         print(f"  PROTEINLM-EMBEDDING: MASKED LANGUAGE MODEL PERPLEXITY & MUTATIONAL FITNESS AGENT")
-        print(f"  Domain: Biomedical Scientific Discovery & Multi-Omics | Standard: ESM-2 / Protein Language Modeling")
+        print(f"  Domain: Biomedical Scientific Discovery & Multi-Omics | Mode: example thresholds; no ESM inference")
         print(f"  Task: {dossier['task_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
@@ -74,7 +99,7 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]))
         out_rows = []
         for r in rows:
             payload = FrontierPayload(
@@ -83,7 +108,7 @@ def main(argv=None):
                 primary_metric=float(r.get("primary_metric", 15.0)),
                 secondary_metric=float(r.get("secondary_metric", 5.0)),
                 status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                is_critical_flag=bool(r.get("is_critical_flag", False)),
+                is_critical_flag=parse_csv_bool(r.get("is_critical_flag", False)),
             )
             dossier = coordinator.process(payload)
             row_dict = dict(r)
@@ -91,7 +116,7 @@ def main(argv=None):
             row_dict["total_alerts"] = dossier["total_alerts"]
             row_dict["critical_count"] = dossier["critical_count"]
             row_dict["consensus_summary"] = dossier["consensus_summary"]
-            out_rows.append(row_dict)
+            out_rows.append(csv_safe_row(row_dict))
 
         with open(args.output, mode="w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=out_fields)
