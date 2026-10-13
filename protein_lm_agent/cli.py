@@ -77,7 +77,7 @@ def main(argv=None):
         dossier = coordinator.process(payload)
         print("=" * 80)
         print(f"  PROTEINLM-EMBEDDING: MASKED LANGUAGE MODEL PERPLEXITY & MUTATIONAL FITNESS AGENT")
-        print(f"  Domain: Biomedical Scientific Discovery & Multi-Omics | Standard: ESM-2 / Protein Language Modeling")
+        print(f"  Domain: Biomedical Scientific Discovery & Multi-Omics | Mode: example thresholds; no ESM inference")
         print(f"  Task: {dossier['task_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:

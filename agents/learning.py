@@ -1,5 +1,5 @@
 """
-Autonomous Bayesian Calibration & Active Learning Feedback Engine for protein-language-model-esm-agent.
+Heuristic concordance-based worker weight tracker for protein-language-model-esm-agent.
 """
 import math
 from typing import Dict, Any, List, Optional
@@ -32,7 +32,7 @@ class ActiveLearningEngine:
         if was_concordant:
             m.concordant_decisions += 1
         
-        # Update dynamic Bayesian reliability weight
+        # Update a heuristic reliability weight (not Bayesian calibration)
         acc = m.concordant_decisions / max(1, m.total_evaluations)
         m.dynamic_weight = round(max(0.2, min(2.0, acc * 1.5)), 3)
 

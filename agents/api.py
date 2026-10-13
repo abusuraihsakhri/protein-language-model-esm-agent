@@ -16,7 +16,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Protein Language Model Esm Agent API",
-    description="Enterprise Distributed Component Platform (AI Drug Discovery, Structural Biology & Wet-Lab Robotics)",
+    description="Demonstration of deterministic threshold checks; no protein-model inference",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -27,7 +27,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "protein-language-model-esm-agent", "domain": "AI Drug Discovery, Structural Biology & Wet-Lab Robotics", "standard": "wwPDB / IUPAC / OpenSMILES / ISAC Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "protein-language-model-esm-agent", "domain": "AI Drug Discovery, Structural Biology & Wet-Lab Robotics", "standard": "Demonstration thresholds; not ESM-2 inference", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")

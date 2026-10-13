@@ -81,7 +81,7 @@ def main(argv=None):
         dossier = supervisor.process_task(payload)
         print("=" * 80)
         print(f"  PROTEIN LANGUAGE MODEL ESM AGENT")
-        print(f"  Domain: AI Drug Discovery, Structural Biology & Wet-Lab Robotics | Standard: wwPDB / IUPAC / OpenSMILES / ISAC Standards")
+        print(f"  Domain: AI Drug Discovery, Structural Biology & Wet-Lab Robotics | Mode: example thresholds; no ESM inference")
         print(f"  Dossier ID: {dossier.dossier_id} | Urgency: [{dossier.overall_urgency.value}]")
         print("=" * 80)
         for a in dossier.alerts:

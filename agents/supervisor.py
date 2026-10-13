@@ -85,5 +85,5 @@ class SystemSupervisor:
         except SecurityException:
             GLOBAL_METRICS.record_phi_block()
             raise
-        prompt = f"Supervisor inquiry for Protein Language Model Esm Agent under wwPDB / IUPAC / OpenSMILES / ISAC Standards: {query}"
+        prompt = f"Supervisor inquiry for Protein Language Model Esm Agent in a deterministic threshold-audit demonstration: {query}"
         return self.llm.invoke(prompt)
