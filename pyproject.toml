@@ -1,27 +1,40 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "protein-language-model-esm-engine"
-version = "2.0.0"
-description = "ProteinLM-Embedding: Masked Language Model Perplexity & Mutational Fitness Engine"
+name = "protein-language-model-esm-agent"
+version = "2.0.1"
+description = "Deterministic protein-related audit thresholds and workflow demonstrations"
 readme = "README.md"
-authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
-license = { text = "MIT" }
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Dr. Abu Suraih Sakhri"}]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Topic :: Security/Cryptography",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
-requires-python = ">=3.9"
-dependencies = []
+dependencies = ["fastapi>=0.110,<1", "pydantic>=2,<3", "uvicorn>=0.27,<1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "httpx>=0.27,<1"]
 
 [project.scripts]
-protein-language-model-esm-engine = "protein_lm_agent.cli:main"
+protein-language-model-esm-agent = "cli:main"
+protein-lm-frontier = "protein_lm_agent.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/protein-language-model-esm-engine"
-Repository = "https://github.com/abusuraihsakhri/protein-language-model-esm-engine.git"
+Homepage = "https://github.com/abusuraihsakhri/protein-language-model-esm-agent"
+Repository = "https://github.com/abusuraihsakhri/protein-language-model-esm-agent"
+
+[tool.setuptools]
+py-modules = ["cli", "enrichment", "simulator", "protein_lm_agent_app"]
+
+[tool.setuptools.packages.find]
+include = ["agents", "agents.*", "protein_lm_agent", "protein_lm_agent.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
