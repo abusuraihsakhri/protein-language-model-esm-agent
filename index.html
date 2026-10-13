@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Protein LM Agent | Threshold Audit</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, sans-serif; color-scheme: dark; background: #0d1220; color: #e7ecf6; }
+    * { box-sizing: border-box; }
+    body { max-width: 1140px; margin: 0 auto; padding: 24px; line-height: 1.5; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; border-bottom: 1px solid #34435d; padding-bottom: 18px; }
+    h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0 0 4px; }
+    h2 { font-size: 1.08rem; margin: 0 0 16px; }
+    p { margin: 4px 0 12px; }
+    .muted { color: #a9b6c9; font-size: .92rem; }
+    .tag { border: 1px solid #447cae; border-radius: 18px; padding: 5px 11px; color: #b8ddfa; font-size: .79rem; white-space: nowrap; }
+    .notice { margin: 16px 0; border-left: 3px solid #eab55c; padding: 10px 14px; background: #232234; }
+    .grid { display: grid; grid-template-columns: minmax(290px, 1fr) minmax(310px, 1.2fr); gap: 16px; }
+    .panel { background: #161f30; border: 1px solid #33425b; border-radius: 12px; padding: 22px; min-width: 0; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .full { grid-column: 1 / -1; }
+    label { display: block; font-size: .88rem; margin-bottom: 5px; color: #c5d1e1; }
+    input:not([type=checkbox]) { width: 100%; min-height: 41px; padding: 9px; border-radius: 6px; border: 1px solid #63738e; background: #0d1422; color: inherit; font: inherit; }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .check { display: flex; gap: 10px; align-items: center; margin: 16px 0; }
+    .check label { margin: 0; }
+    .check input { height: 18px; width: 18px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    button { border: 1px solid #568ed1; background: #2367ba; color: white; border-radius: 7px; padding: 10px 15px; font: inherit; font-weight: 600; cursor: pointer; }
+    button.secondary { background: #202d42; border-color: #627490; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button:hover:not(:disabled) { filter: brightness(1.14); }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #0a1120; padding: 16px; border: 1px solid #2f405a; border-radius: 9px; max-height: 520px; overflow: auto; font-size: .84rem; line-height: 1.55; }
+    #summary { font-size: 1rem; font-weight: 650; margin-bottom: 10px; }
+    .counts { display: flex; gap: 18px; flex-wrap: wrap; font-size: .86rem; color: #b9ccdf; margin-bottom: 12px; }
+    .error { color: #ffabb3; }
+    .ok { color: #94e3c4; }
+    .warn { color: #ffd38c; }
+    footer { margin: 18px 0; color: #a9b6c9; font-size: .85rem; }
+    a { color: #9ed0ff; }
+    @media (max-width: 760px) { body { padding: 14px; } .grid { grid-template-columns: 1fr; } .panel { padding: 16px; } }
+    @media (max-width: 430px) { .fields { grid-template-columns: 1fr; } .full { grid-column: auto; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Protein Language Model ESM Agent</h1>
+      <p class="muted">Deterministic three-worker threshold audit · Browser edition</p>
+    </div>
+    <span class="tag">Runs locally in your browser</span>
+  </header>
+  <p class="notice" role="note"><strong>Scope:</strong> This is a threshold-based workflow demonstration, <strong>not</strong> ESM-2 inference. It does not generate protein embeddings, residue likelihoods, clinical recommendations, or cryptographic audit signatures.</p>
+  <main class="grid">
+    <section class="panel" aria-labelledby="form-title">
+      <h2 id="form-title">Evaluate a task</h2>
+      <form id="audit-form">
+        <div class="fields">
+          <div><label for="task_id">Task ID</label><input id="task_id" maxlength="120" required value="DEMO-001"></div>
+          <div><label for="target_id">Target identifier</label><input id="target_id" maxlength="120" required value="PROTEIN-A"></div>
+          <div><label for="primary_metric">Primary metric</label><input id="primary_metric" type="number" step="any" required value="29.4"></div>
+          <div><label for="secondary_metric">Secondary metric</label><input id="secondary_metric" type="number" step="any" required value="14.8"></div>
+          <div class="full"><label for="status_descriptor">Status descriptor</label><input id="status_descriptor" maxlength="200" required value="DISCORDANT_ANOMALY"></div>
+        </div>
+        <div class="check"><input id="is_critical" type="checkbox" checked><label for="is_critical">Critical escalation flag</label></div>
+        <div class="actions">
+          <button type="submit">Evaluate</button>
+          <button type="button" class="secondary" id="reset-btn">Clear results</button>
+        </div>
+      </form>
+      <p class="muted" style="margin-top: 18px">Rules: primary &gt;25 → elevated; secondary &gt;12 → elevated; critical flag → critical; descriptor containing DISCORDANT, ANOMALY, MUTANT, VIOLATION, FAIL or REJECT → elevated.</p>
+    </section>
+    <section class="panel" aria-labelledby="result-title">
+      <h2 id="result-title">Results</h2>
+      <div class="counts"><span>Evaluations this session: <strong id="task-count">0</strong></span><span>Alerts: <strong id="alert-count">0</strong></span></div>
+      <div id="summary" aria-live="polite">No evaluation performed</div>
+      <pre id="result" aria-live="polite">Enter values and choose Evaluate. Results are held in memory only.</pre>
+      <div class="actions">
+        <button type="button" id="download-btn" class="secondary" disabled>Export JSON</button>
+      </div>
+    </section>
+  </main>
+  <footer>No data is sent to a server by this page. Avoid entering identifiable patient data. The Python API and CLI provide separate audit workflows. <a href="https://github.com/abusuraihsakhri/protein-language-model-esm-agent">Source and documentation</a>.</footer>
+  <script>
+    "use strict";
+    (function () {
+      const form = document.getElementById("audit-form");
+      const result = document.getElementById("result");
+      const summary = document.getElementById("summary");
+      const taskCount = document.getElementById("task-count");
+      const alertCount = document.getElementById("alert-count");
+      const download = document.getElementById("download-btn");
+      let evaluations = 0;
+      let lastResult = null;
+
+      function audit(p) {
+        const alerts = [];
+        function alert(worker, urgency, message) {
+          alerts.push({ origin_worker: worker, urgency: urgency, summary: message });
+        }
+        if (p.primary_metric > 25) alert("InvariantQCWorker", "ELEVATED_RISK", "Primary metric exceeds 25");
+        if (p.is_critical_flag || p.secondary_metric > 12) {
+          alert("SafetyEscalationWorker", p.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK", "Critical flag set or secondary metric exceeds 12");
+        }
+        if (["DISCORDANT", "ANOMALY", "MUTANT", "VIOLATION", "FAIL", "REJECT"].some(function (word) {
+          return p.status_descriptor.toUpperCase().includes(word);
+        })) alert("ProtocolConformanceWorker", "ELEVATED_RISK", "Descriptor matches an anomaly keyword");
+        const critical = alerts.filter(function (a) { return a.urgency === "CRITICAL_STAT_PANIC"; }).length;
+        const urgency = critical ? "CRITICAL_STAT_PANIC" : alerts.length ? "ELEVATED_RISK" : "ROUTINE";
+        return {
+          mode: "client_side_threshold_demo", model_inference: false,
+          task_id: p.task_id, target_identifier: p.target_identifier,
+          overall_urgency: urgency,
+          integrity_status: critical ? "RECALIBRATION_REQUIRED" : alerts.length ? "DISCORDANT_ANOMALY" : "VALIDATED_OPTIMAL",
+          total_alerts: alerts.length, critical_alerts_count: critical, alerts: alerts
+        };
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const p = {
+          task_id: document.getElementById("task_id").value.trim(),
+          target_identifier: document.getElementById("target_id").value.trim(),
+          primary_metric: Number(document.getElementById("primary_metric").value),
+          secondary_metric: Number(document.getElementById("secondary_metric").value),
+          status_descriptor: document.getElementById("status_descriptor").value.trim(),
+          is_critical_flag: document.getElementById("is_critical").checked
+        };
+        if (!p.task_id || !p.target_identifier || !p.status_descriptor ||
+            !Number.isFinite(p.primary_metric) || !Number.isFinite(p.secondary_metric)) {
+          summary.textContent = "Invalid input";
+          summary.className = "error";
+          result.textContent = "Enter non-empty identifiers and finite numeric metrics.";
+          return;
+        }
+        lastResult = audit(p);
+        evaluations += 1;
+        taskCount.textContent = String(evaluations);
+        alertCount.textContent = String(lastResult.total_alerts);
+        summary.textContent = lastResult.overall_urgency.replaceAll("_", " ");
+        summary.className = lastResult.overall_urgency === "ROUTINE" ? "ok" : "warn";
+        result.textContent = JSON.stringify(lastResult, null, 2);
+        download.disabled = false;
+      });
+      document.getElementById("reset-btn").addEventListener("click", function () {
+        lastResult = null;
+        summary.textContent = "No evaluation performed";
+        summary.className = "";
+        result.textContent = "Enter values and choose Evaluate. Results are held in memory only.";
+        alertCount.textContent = "0";
+        download.disabled = true;
+      });
+      download.addEventListener("click", function () {
+        if (!lastResult) return;
+        const blob = new Blob([JSON.stringify(lastResult, null, 2) + "\n"], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "protein-threshold-audit.json";
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+    }());
+  </script>
+</body>
+</html>
