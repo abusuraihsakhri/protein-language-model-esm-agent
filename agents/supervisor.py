@@ -3,8 +3,10 @@ Supervisor Orchestrator & Operations Intelligence for Protein Language Model Esm
 Domain: AI Drug Discovery, Structural Biology & Wet-Lab Robotics
 """
 import uuid
+import time
 from typing import Dict, Any, List, Optional
-from .base import AuditLogger, ActionExecutor, PHIGuard
+from .base import AuditLogger, ActionExecutor, PHIGuard, SecurityException
+from .metrics import GLOBAL_METRICS
 from .models import SystemTaskPayload, AgentAlert, ConsensusDossier, UrgencyLevel, SystemIntegrityStatus
 from .workers import InvariantQCWorker, SafetyEscalationWorker, ProtocolConformanceWorker
 from .llm_factory import LLMFactory
@@ -21,10 +23,13 @@ class SystemSupervisor:
         self.dossier_registry: Dict[str, ConsensusDossier] = {}
 
     def process_task(self, payload: SystemTaskPayload, actor: str = "SystemSupervisor") -> ConsensusDossier:
-        # Zero-PHI outbound validation
-        PHIGuard.assert_no_phi(payload.task_id)
-        PHIGuard.assert_no_phi(payload.target_identifier)
-        PHIGuard.assert_no_phi(payload.status_descriptor)
+        start = time.perf_counter()
+        # Inspect metadata too. Pattern matching cannot establish true de-identification.
+        try:
+            PHIGuard.assert_no_phi(payload.model_dump_json())
+        except SecurityException:
+            GLOBAL_METRICS.record_phi_block()
+            raise
 
         # Multi-worker evaluations
         all_alerts: List[AgentAlert] = []
@@ -71,9 +76,14 @@ class SystemSupervisor:
         )
 
         self.dossier_registry[dossier.dossier_id] = dossier
+        GLOBAL_METRICS.record_task(overall_urgency.value, time.perf_counter() - start)
         return dossier
 
     def query_supervisory_chat(self, query: str) -> str:
-        PHIGuard.assert_no_phi(query)
+        try:
+            PHIGuard.assert_no_phi(query)
+        except SecurityException:
+            GLOBAL_METRICS.record_phi_block()
+            raise
         prompt = f"Supervisor inquiry for Protein Language Model Esm Agent under wwPDB / IUPAC / OpenSMILES / ISAC Standards: {query}"
         return self.llm.invoke(prompt)
